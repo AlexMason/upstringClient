@@ -1,12 +1,22 @@
 import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
+import { Link } from "react-router-dom";
 import UserContext from "../contexts/UserContext";
+import {
+  LoginRegisterBox as Box,
+  Form,
+  Label,
+  Input,
+  Button,
+} from "../components/StyledComponents";
+import { error } from "console";
 
 export interface LoginProps {}
 
 export interface LoginState {
   username: string;
   password: string;
+  error: boolean;
 }
 
 class Login extends React.Component<LoginProps, LoginState> {
@@ -17,6 +27,7 @@ class Login extends React.Component<LoginProps, LoginState> {
     this.state = {
       username: "",
       password: "",
+      error: false,
     };
   }
 
@@ -42,8 +53,11 @@ class Login extends React.Component<LoginProps, LoginState> {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-        this.context.setToken(data.token); //login
+        if (data.token) {
+          this.context.setToken(data.token); //login
+        } else {
+          this.setState({ error: true });
+        }
       });
   };
 
@@ -60,28 +74,41 @@ class Login extends React.Component<LoginProps, LoginState> {
 
   render() {
     return (
-      <div>
-        <span>You are logged {this.context.isAuth ? "in" : "out"}</span>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            id="username"
-            type="text"
-            placeholder="username"
-            value={this.state.username}
-            onChange={this.handleChange}
-          />
-          <input
-            id="password"
-            type="text"
-            placeholder="password"
-            value={this.state.password}
-            onChange={this.handleChange}
-          />
-          <button type="submit">
-            {this.context.isAuth ? "Logout" : "Login"}
-          </button>
-        </form>
-      </div>
+      <Box>
+        {this.state.error && (
+          <div className="flex justify-center text-red-500 mb-4">
+            Your username or password was incorrect.
+          </div>
+        )}
+        <Form onSubmit={this.handleSubmit}>
+          {!this.context.isAuth && (
+            <>
+              <Label>Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="username"
+                value={this.state.username}
+                onChange={this.handleChange}
+              />
+              <Label>Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="password"
+                value={this.state.password}
+                onChange={this.handleChange}
+              />{" "}
+            </>
+          )}
+          <Button type="submit">
+            {this.context.isAuth ? "Logout?" : "Login"}
+          </Button>
+        </Form>
+        <Link to="/register">
+          <Button>Register</Button>
+        </Link>
+      </Box>
     );
   }
 }
