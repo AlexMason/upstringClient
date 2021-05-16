@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
 import { ChangeEventHandler } from "react";
+import { Redirect } from "react-router";
 import {
   LoginRegisterBox as Box,
   Form,
@@ -9,6 +10,7 @@ import {
   Button,
   FormGroup,
   FormRow,
+  FormInput,
 } from "../components/StyledComponents";
 import UserContext from "../contexts/UserContext";
 
@@ -105,6 +107,7 @@ class Register extends React.Component<RegisterProps, RegisterState> {
   render() {
     return (
       <Box>
+        {this.context.isAuth && <Redirect to="/" />}
         {this.state.errors.length > 0 && (
           <div className="flex justify-center text-red-500 mb-4">
             {this.state.errors[0]}
@@ -162,26 +165,3 @@ class Register extends React.Component<RegisterProps, RegisterState> {
 }
 
 export default Register;
-
-type FormInputProps = {
-  id: string;
-  label: string;
-  value?: string;
-  type?: string;
-  onChange?: ChangeEventHandler<HTMLInputElement>;
-  inline?: boolean;
-};
-
-const FormInput = (props: FormInputProps) => {
-  return (
-    <FormGroup $inline={props.inline}>
-      <Label htmlFor={props.id}>{props.label}</Label>
-      <Input
-        id={props.id}
-        type={props.type || "text"}
-        value={props.value || ""}
-        onChange={props.onChange}
-      />
-    </FormGroup>
-  );
-};

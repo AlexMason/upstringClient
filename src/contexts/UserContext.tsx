@@ -11,7 +11,6 @@ export interface UserContextProviderState {
   token: string | null;
   isAuth: boolean;
   user: any;
-  role: number;
 }
 
 export class UserContextProvider extends React.Component<
@@ -24,7 +23,6 @@ export class UserContextProvider extends React.Component<
       token: null,
       isAuth: false,
       user: {},
-      role: 0,
     };
   }
 
@@ -90,7 +88,7 @@ export class UserContextProvider extends React.Component<
           token: this.state.token,
           setToken: this.setToken,
           isAuth: this.state.isAuth,
-          role: this.state.role,
+          user: this.state.user,
         }}
       >
         {this.props.children}

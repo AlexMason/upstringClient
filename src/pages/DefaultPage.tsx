@@ -16,7 +16,9 @@ class DefaultPage extends React.Component<DefaultPageProps, DefaultPageState> {
     return (
       <PageWrapper>
         <Header />
+
         <ContentWrapper>{this.props.children}</ContentWrapper>
+
         <Footer />
       </PageWrapper>
     );

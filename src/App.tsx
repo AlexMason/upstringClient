@@ -1,7 +1,15 @@
 import "./App.css";
 import tw from "tailwind-styled-components";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { Login, Register, Profile, Home, DefaultPage as Page } from "./pages";
+import {
+  Topic,
+  EditTopic,
+  Login,
+  Register,
+  Profile,
+  Home,
+  DefaultPage as Page,
+} from "./pages";
 
 function App() {
   return (
@@ -17,6 +25,15 @@ function App() {
             </Route>
             <Route path="/profile">
               <Profile />
+            </Route>
+            <Route path="/topic/new">
+              <EditTopic />
+            </Route>
+            <Route path="/topic/edit/:id">
+              <EditTopic edit />
+            </Route>
+            <Route path="/topic/:id">
+              <Topic />
             </Route>
             <Route path="/">
               <Home />

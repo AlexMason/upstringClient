@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import UserContext from "../contexts/UserContext";
 import {
   LoginRegisterBox as Box,
@@ -9,7 +9,6 @@ import {
   Input,
   Button,
 } from "../components/StyledComponents";
-import { error } from "console";
 
 export interface LoginProps {}
 
@@ -75,6 +74,7 @@ class Login extends React.Component<LoginProps, LoginState> {
   render() {
     return (
       <Box>
+        {this.context.isAuth && <Redirect to="/" />}
         {this.state.error && (
           <div className="flex justify-center text-red-500 mb-4">
             Your username or password was incorrect.

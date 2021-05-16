@@ -1,12 +1,15 @@
 import * as React from "react";
 import tw from "tailwind-styled-components";
 import { Link } from "react-router-dom";
+import UserContext from "../contexts/UserContext";
 
 export interface HeaderProps {}
 
 export interface HeaderState {}
 
 class Header extends React.Component<HeaderProps, HeaderState> {
+  static contextType = UserContext;
+
   constructor(props: HeaderProps) {
     super(props);
     this.state = {};
@@ -21,12 +24,20 @@ class Header extends React.Component<HeaderProps, HeaderState> {
             <Link to={`/`}>
               <MenuItem>Home</MenuItem>
             </Link>
-            <Link to={`/profile`}>
-              <MenuItem>Profile</MenuItem>
-            </Link>
-            <Link to={`/login`}>
-              <MenuItem>Log In</MenuItem>
-            </Link>
+            {this.context.isAuth && (
+              <Link to={`/profile`}>
+                <MenuItem>Profile</MenuItem>
+              </Link>
+            )}
+            {this.context.isAuth ? (
+              <MenuItem onClick={() => this.context.setToken(null)}>
+                Log Out
+              </MenuItem>
+            ) : (
+              <Link to={`/login`}>
+                <MenuItem>Log In</MenuItem>
+              </Link>
+            )}
           </NavMenuItems>
         </Nav>
       </HeaderWrapper>
