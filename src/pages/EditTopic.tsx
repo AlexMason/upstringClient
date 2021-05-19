@@ -15,6 +15,8 @@ import {
   NewTopicBox,
 } from "../components/StyledComponents";
 import UserContext from "../contexts/UserContext";
+import tw from "tailwind-styled-components";
+import TagsSelector from "../components/TagsSelector";
 
 export interface IPathParams {
   id?: string;
@@ -28,6 +30,7 @@ export interface NewTopicState {
   title: string;
   body: string | null;
   status: string;
+  selectedTags: string[];
 }
 
 class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
@@ -41,6 +44,7 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
       title: "",
       body: null,
       status: "public",
+      selectedTags: [],
     };
   }
 
@@ -87,10 +91,10 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
     }
   };
 
-  handleSubmit = (event: React.SyntheticEvent) => {
-    event.preventDefault();
+  handleSubmit = (event: React.MouseEvent) => {
+    const { title, body, status, selectedTags } = this.state;
 
-    const { title, body, status } = this.state;
+    console.log(event);
 
     if (this.props.edit) {
       console.log("edit");
@@ -102,6 +106,7 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
             title,
             body,
             status,
+            selectedTags,
           }),
           headers: {
             "Content-Type": "application/json",
@@ -128,6 +133,7 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
             title,
             body,
             status,
+            selectedTags,
           }),
           headers: {
             "Content-Type": "application/json",
@@ -155,7 +161,7 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
       <>
         {this.state.body !== null && (
           <NewTopicBox>
-            <Form onSubmit={this.handleSubmit}>
+            <Form onSubmit={(e) => e.preventDefault()}>
               <FormInput
                 id="title"
                 label="Title"
@@ -165,14 +171,28 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
 
               <FormGroup>
                 <Label>Description</Label>
-                <Editor
-                  ref={this.editorRef}
-                  initialValue={this.state.body as string}
-                  onChange={this.handleEditorChange}
+                <EditorWrapper>
+                  <Editor
+                    ref={this.editorRef}
+                    initialValue={this.state.body as string}
+                    onChange={this.handleEditorChange}
+                  />
+                </EditorWrapper>
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Description</Label>
+                <TagsSelector
+                  selectedTags={this.state.selectedTags}
+                  onChange={(tags: string[]) => {
+                    this.setState({ selectedTags: tags });
+                  }}
                 />
               </FormGroup>
 
-              <Button>{this.props.edit ? "Update" : "Create"}</Button>
+              <Button onClick={this.handleSubmit}>
+                {this.props.edit ? "Update" : "Create"}
+              </Button>
             </Form>
           </NewTopicBox>
         )}
@@ -182,3 +202,5 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
 }
 
 export default withRouter(NewTopic);
+
+const EditorWrapper = tw.div`text-gray-900`;

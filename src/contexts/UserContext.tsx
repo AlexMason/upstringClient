@@ -1,8 +1,19 @@
 import * as React from "react";
 
-type ContextProps = {};
+export type ContextProps = {
+  token: string | null;
+  isAuth: boolean;
+  setToken: CallableFunction;
+  user: {};
+};
 
-const UserContext = React.createContext<Partial<ContextProps>>({});
+const UserContext = React.createContext<ContextProps>({
+  token: null,
+  isAuth: false,
+  setToken: (token: string | null) => {},
+  user: {},
+});
+
 export default UserContext;
 
 export interface UserContextProviderProps {}
@@ -11,6 +22,7 @@ export interface UserContextProviderState {
   token: string | null;
   isAuth: boolean;
   user: any;
+  isLoading: boolean;
 }
 
 export class UserContextProvider extends React.Component<
@@ -20,16 +32,15 @@ export class UserContextProvider extends React.Component<
   constructor(props: UserContextProviderProps) {
     super(props);
     this.state = {
-      token: null,
+      token: localStorage.getItem("token"),
       isAuth: false,
       user: {},
+      isLoading: true,
     };
   }
 
   componentDidMount() {
-    this.setState({
-      token: localStorage.getItem("token"),
-    });
+    this.validateToken();
   }
 
   componentDidUpdate(
@@ -37,43 +48,50 @@ export class UserContextProvider extends React.Component<
     prevState: UserContextProviderState
   ) {
     if (this.state.token !== prevState.token) {
-      if (this.state.token) {
-        localStorage.setItem("token", this.state.token);
-
-        fetch(`${process.env.REACT_APP_SERVER_URL!}/users/`, {
-          headers: new Headers({ Authorization: `Bearer ${this.state.token}` }),
-        })
-          .then((res) => {
-            if (res.status !== 200) {
-              this.setState({
-                token: null,
-                isAuth: false,
-                user: {},
-              });
-
-              localStorage.removeItem("token");
-            }
-
-            return res.json();
-          })
-          .then((data) => {
-            if (data.user) {
-              this.setState({
-                isAuth: true,
-                user: data.user,
-              });
-            }
-          });
-      } else {
-        this.setState({
-          isAuth: false,
-          user: {},
-        });
-
-        localStorage.removeItem("token");
-      }
+      this.validateToken();
     }
   }
+
+  validateToken = () => {
+    if (this.state.token) {
+      localStorage.setItem("token", this.state.token);
+
+      fetch(`${process.env.REACT_APP_SERVER_URL!}/users/`, {
+        headers: new Headers({ Authorization: `Bearer ${this.state.token}` }),
+      })
+        .then((res) => {
+          if (res.status !== 200) {
+            this.setState({
+              token: null,
+              isAuth: false,
+              user: {},
+              isLoading: false,
+            });
+
+            localStorage.removeItem("token");
+          }
+
+          return res.json();
+        })
+        .then((data) => {
+          if (data.user) {
+            this.setState({
+              isAuth: true,
+              user: data.user,
+              isLoading: false,
+            });
+          }
+        });
+    } else {
+      this.setState({
+        isAuth: false,
+        user: {},
+        isLoading: false,
+      });
+
+      localStorage.removeItem("token");
+    }
+  };
 
   setToken = (token: string | null) => {
     this.setState({
@@ -91,7 +109,7 @@ export class UserContextProvider extends React.Component<
           user: this.state.user,
         }}
       >
-        {this.props.children}
+        {!this.state.isLoading && this.props.children}
       </UserContext.Provider>
     );
   }

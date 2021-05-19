@@ -8,6 +8,12 @@ import { RouteComponentProps, withRouter } from "react-router";
 import UserContext from "../contexts/UserContext";
 import { Link } from "react-router-dom";
 import { SyntheticEvent } from "react";
+import Comment from "../components/Comment";
+import Loading from "../components/Loading";
+import "codemirror/lib/codemirror.css";
+import "@toast-ui/editor/dist/toastui-editor.css";
+import { Editor } from "@toast-ui/react-editor";
+import { Button } from "../components/StyledComponents";
 
 export interface IPathParams {
   id: string;
@@ -18,26 +24,50 @@ export interface TopicProps extends RouteComponentProps<IPathParams> {}
 export interface TopicState {
   topic: any;
   isTopicOwner: boolean;
+  isLoading: boolean;
 }
 
 class Topic extends React.Component<TopicProps, TopicState> {
   static contextType = UserContext;
+  editorRef = React.createRef<any>();
 
   constructor(props: TopicProps) {
     super(props);
     this.state = {
       topic: null,
       isTopicOwner: false,
+      isLoading: true,
     };
   }
 
   componentDidMount() {
+    this.fetchTopic();
+  }
+
+  fetchTopic = () => {
     fetch(
       `${process.env.REACT_APP_SERVER_URL}/topics/${this.props.match.params.id}`
     )
       .then((res) => res.json())
       .then((data) => {
-        this.setState({ topic: data });
+        data.comments.sort((a: any, b: any) => {
+          let aCommentRating = a.ratings.reduce(
+            (a: number, c: any) => (a + c.positive ? 1 : -1),
+            0
+          );
+          let bCommentRating = b.ratings.reduce(
+            (b: number, c: any) => (b + c.positive ? 1 : -1),
+            0
+          );
+
+          if (aCommentRating < bCommentRating) return 1;
+          if (aCommentRating > bCommentRating) return -1;
+          return 0;
+        });
+
+        this.setState({ topic: data, isLoading: false });
+
+        console.log(data);
 
         if (this.context.isAuth && data) {
           this.setState({
@@ -45,7 +75,7 @@ class Topic extends React.Component<TopicProps, TopicState> {
           });
         }
       });
-  }
+  };
 
   handleDelete = (event: SyntheticEvent) => {
     event.preventDefault();
@@ -62,52 +92,145 @@ class Topic extends React.Component<TopicProps, TopicState> {
     });
   };
 
-  render() {
-    if (this.state.topic) {
-      const { title, body, user, rating, id, comments } = this.state.topic;
+  createComment = () => {
+    let commentBody = this.editorRef.current
+      .getInstance()
+      .toastMark.lineTexts.join("\r\n");
 
-      return (
-        <>
-          {user && (
-            <TopicContainer>
-              <TopicTitle>{title}</TopicTitle>
-              <TopicBody className="markdown-body">
-                <ReactMarkdown remarkPlugins={[gfm]} children={body} />
-              </TopicBody>
-              <TopicMeta>
-                <TopicVoting>
-                  <FiChevronDown />
-                  <span>{rating}</span>
-                  <FiChevronUp />
-                </TopicVoting>
-                <TopicControls>
-                  {this.state.isTopicOwner && (
-                    <>
-                      <Link to={`/topic/edit/${id}`}>Edit</Link> |{" "}
-                    </>
-                  )}
-                  {this.state.isTopicOwner && (
-                    <>
-                      <DeleteButton onClick={this.handleDelete}>
-                        Delete
-                      </DeleteButton>{" "}
-                      |{" "}
-                    </>
-                  )}
-                  posted by {user.firstName} ({user.username})
-                </TopicControls>
-              </TopicMeta>
-            </TopicContainer>
-          )}
-        </>
-      );
+    fetch(`${process.env.REACT_APP_SERVER_URL}/comments`, {
+      method: "POST",
+      headers: new Headers({
+        Authorization: `Bearer ${this.context.token}`,
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({
+        topicId: this.state.topic.id,
+        body: commentBody,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        this.fetchTopic();
+      });
+  };
+
+  handleRating = (positive: boolean) => {
+    fetch(
+      `${process.env.REACT_APP_SERVER_URL}/ratings/topic/${this.state.topic.id}`,
+      {
+        method: "POST",
+        headers: new Headers({
+          Authorization: `Bearer ${this.context.token}`,
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ positive }),
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        this.fetchTopic();
+      });
+  };
+
+  render() {
+    if (!this.state.isLoading) {
+      if (this.state.topic) {
+        const { title, body, user, ratings, id, comments } = this.state.topic;
+
+        const ratingsTotal = ratings.reduce(
+          (a: number, c: any) => (a + c.positive ? 1 : -1),
+          0
+        );
+
+        return (
+          <>
+            {user && (
+              <>
+                <TopicContainer>
+                  <TopicTitle>{title}</TopicTitle>
+                  <TopicBody className="markdown-body">
+                    <ReactMarkdown remarkPlugins={[gfm]} children={body} />
+                  </TopicBody>
+                  <TopicMeta>
+                    <TopicVoting>
+                      <FiChevronDown
+                        onClick={() => {
+                          this.handleRating(false);
+                        }}
+                      />
+                      <span>{ratingsTotal}</span>
+                      <FiChevronUp
+                        onClick={() => {
+                          this.handleRating(true);
+                        }}
+                      />
+                    </TopicVoting>
+                    <TopicControls>
+                      {this.state.isTopicOwner && (
+                        <>
+                          <Link to={`/topic/edit/${id}`}>Edit</Link> |{" "}
+                        </>
+                      )}
+                      {this.state.isTopicOwner && (
+                        <>
+                          <DeleteButton onClick={this.handleDelete}>
+                            Delete
+                          </DeleteButton>{" "}
+                          |{" "}
+                        </>
+                      )}
+                      posted by {user.firstName} ({user.username})
+                    </TopicControls>
+                  </TopicMeta>
+                </TopicContainer>
+
+                <Comments>
+                  {this.state.topic.comments.map((comment: any) => {
+                    return (
+                      <Comment
+                        // key={uuid()}
+                        comment={comment}
+                        id={comment.id}
+                        vote={comment.rating}
+                        body={comment.body}
+                        author={{
+                          id: comment.user.id,
+                          username: comment.user.username,
+                          firstName: comment.user.firstName,
+                        }}
+                        callback={this.fetchTopic}
+                      />
+                    );
+                  })}
+                </Comments>
+                {this.context.isAuth && (
+                  <CreateComment>
+                    <Editor ref={this.editorRef} height="200px" />
+
+                    <CreateCommentMeta>
+                      <Button onClick={this.createComment}>Comment</Button>
+                    </CreateCommentMeta>
+                  </CreateComment>
+                )}
+              </>
+            )}
+          </>
+        );
+      } else {
+        return <>404</>; //TODO: Handle 404
+      }
     } else {
-      return <>404</>;
+      return <Loading />;
     }
   }
 }
 
 export default withRouter(Topic);
+
+const Comments = tw.div`mt-6 flex flex-col gap-3`;
+const CreateComment = tw.div`mt-6 flex flex-col`;
+const CreateCommentMeta = tw.div`mt-2 self-end`;
 
 const TopicContainer = tw.div`text-gray-800 bg-gray-200`;
 const TopicTitle = tw.div`p-4 text-2xl bg-gray-400 border-b border-gray-300`;

@@ -6,7 +6,7 @@ export const LoginRegisterBox = tw.div`w-7/12 bg-gray-700 mx-auto p-12`;
 export const NewTopicBox = tw.div`w-9/12 bg-gray-700 mx-auto p-12`;
 
 // FORMS =====================================================
-export const Form = tw.form`flex flex-col`;
+export const Form = tw.div`flex flex-col`;
 export const FormRow = tw.div`flex gap-3`;
 export const FormGroup = tw.div<{ $inline?: boolean }>`
   flex
@@ -14,7 +14,7 @@ export const FormGroup = tw.div<{ $inline?: boolean }>`
   ${(p) => (p.$inline ? "flex-row gap-2" : "flex-col")}
 `;
 export const Label = tw.label``;
-export const Input = tw.input`mb-2 p-1 rounded-none text-black flex-grow`;
+export const Input = tw.input`mb-2 p-1 rounded-none text-black flex-grow focus:rounded-none`;
 export const Textarea = tw.textarea`mb-2 p-1 rounded-none text-black flex-grow`;
 export const Button = tw.button`border rounded-none px-1 uppercase`;
 

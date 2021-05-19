@@ -27,9 +27,12 @@ class DefaultPage extends React.Component<DefaultPageProps, DefaultPageState> {
 
 export default DefaultPage;
 
-const PageWrapper = tw.div``;
+const PageWrapper = tw.div`flex flex-col min-h-full bg-gray-900`;
 
 const ContentWrapper = tw.div`
   container
   mx-auto
+  flex-grow
+  flex
+  flex-col
 `;

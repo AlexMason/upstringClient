@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
 import { Link, Redirect } from "react-router-dom";
-import UserContext from "../contexts/UserContext";
+import UserContext, { ContextProps } from "../contexts/UserContext";
 import {
   LoginRegisterBox as Box,
   Form,
@@ -20,6 +20,7 @@ export interface LoginState {
 
 class Login extends React.Component<LoginProps, LoginState> {
   static contextType = UserContext;
+  context!: React.ContextType<typeof UserContext>;
 
   constructor(props: LoginProps) {
     super(props);

@@ -11,10 +11,10 @@ class Footer extends React.Component<FooterProps, FooterState> {
     super(props);
     this.state = {};
   }
+
   render() {
     return (
       <>
-        <ArtificalSpace />
         <FooterWrapper>
           <Copyright>2021 &copy; Alexander Mason</Copyright>
         </FooterWrapper>
@@ -30,11 +30,7 @@ const FooterWrapper = tw.div`
   text-gray-100
   py-4
   mt-12
-  shadow-lg
-`;
-
-const ArtificalSpace = styled.div`
-  height: 300px;
+  shadow-xl
 `;
 
 const Copyright = tw.div`

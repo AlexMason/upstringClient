@@ -11,33 +11,24 @@ import {
   DefaultPage as Page,
 } from "./pages";
 
+import Tags from "./components/TagsSelector";
+
 function App() {
   return (
     <Router>
       <AppWrapper>
         <Page>
           <Switch>
-            <Route path="/login">
-              <Login />
-            </Route>
-            <Route path="/register">
-              <Register />
-            </Route>
-            <Route path="/profile">
-              <Profile />
-            </Route>
-            <Route path="/topic/new">
-              <EditTopic />
-            </Route>
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/topic/new" component={EditTopic} />
             <Route path="/topic/edit/:id">
               <EditTopic edit />
             </Route>
-            <Route path="/topic/:id">
-              <Topic />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
+            <Route path="/topic/:id" component={Topic} />
+            <Route path="/tags" component={Tags} />
+            <Route path="/" component={Home} />
           </Switch>
         </Page>
       </AppWrapper>

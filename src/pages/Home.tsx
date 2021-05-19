@@ -4,14 +4,30 @@ import { Button } from "../components/StyledComponents";
 import { FiChevronDown, FiChevronUp, FiTag } from "react-icons/fi";
 import uuid from "react-uuid";
 import { Link } from "react-router-dom";
+import UserContext from "../contexts/UserContext";
+
+export interface ITopicsData {
+  id: number;
+  title: string;
+  body: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  user: any;
+  tags?: any[];
+  ratings?: any[];
+}
 
 export interface HomeProps {}
 
 export interface HomeState {
-  topics: any[];
+  topics: Array<any>;
 }
 
 class Home extends React.Component<HomeProps, HomeState> {
+  static contextType = UserContext;
+
   constructor(props: HomeProps) {
     super(props);
     this.state = {
@@ -20,16 +36,35 @@ class Home extends React.Component<HomeProps, HomeState> {
   }
 
   componentDidMount() {
+    this.fetchTopics();
+  }
+
+  fetchTopics = () => {
     fetch(`${process.env.REACT_APP_SERVER_URL}/topics`)
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: ITopicsData[]) => {
         console.log(data);
 
         this.setState({
           topics: data,
         });
       });
-  }
+  };
+
+  changeRating = (topic: number, positive: boolean) => {
+    fetch(`${process.env.REACT_APP_SERVER_URL}/ratings/topic/${topic}`, {
+      method: "POST",
+      headers: new Headers({
+        Authorization: `Bearer ${this.context.token}`,
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({ positive }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        this.fetchTopics();
+      });
+  };
 
   render() {
     return (
@@ -43,37 +78,29 @@ class Home extends React.Component<HomeProps, HomeState> {
           </div>
         </UtilityBar>
         <TopicsContainer>
-          {this.state.topics.map((topic) => {
+          {this.state.topics.map((topic: any) => {
+            const ratingsTotal = topic.ratings.reduce(
+              (a: number, c: any) => (a + c.positive ? 1 : -1),
+              0
+            );
             return (
               <Topic
                 key={uuid()}
                 id={topic.id}
                 title={topic.title}
-                tags={[]}
-                comments={0}
+                tags={topic.tags.map((tag: any) => tag.name)}
+                comments={topic.comments.length}
                 answers={0}
-                vote={topic.rating}
+                vote={ratingsTotal}
                 author={{
                   id: topic.user.id,
                   firstName: topic.user.firstName,
                   username: topic.user.username,
                 }}
+                changeRating={this.changeRating}
               />
             );
           })}
-          <Topic
-            id={0}
-            title="This is a Topic title"
-            tags={["HTML", "CSS", "JavaScript"]}
-            comments={0}
-            answers={0}
-            vote={0}
-            author={{
-              id: 1,
-              firstName: "Alex",
-              username: "alexmason93",
-            }}
-          />
         </TopicsContainer>
       </>
     );
@@ -110,15 +137,24 @@ type TopicItemProps = {
   author: IAuther;
   title: string;
   vote: number;
+  changeRating?: CallableFunction;
 };
 
 const Topic = (props: TopicItemProps) => {
   return (
     <TopicItem>
       <TopicVoting>
-        <FiChevronUp />
+        <FiChevronUp
+          onClick={() => {
+            props.changeRating && props.changeRating(props.id, true);
+          }}
+        />
         <span>{props.vote}</span>
-        <FiChevronDown />
+        <FiChevronDown
+          onClick={() => {
+            props.changeRating && props.changeRating(props.id, false);
+          }}
+        />
       </TopicVoting>
       <TopicContent>
         <Link
