@@ -14,6 +14,7 @@ import "codemirror/lib/codemirror.css";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor } from "@toast-ui/react-editor";
 import { Button } from "../components/StyledComponents";
+import uuid from "react-uuid";
 
 export interface IPathParams {
   id: string;
@@ -52,11 +53,11 @@ class Topic extends React.Component<TopicProps, TopicState> {
       .then((data) => {
         data.comments.sort((a: any, b: any) => {
           let aCommentRating = a.ratings.reduce(
-            (a: number, c: any) => (a + c.positive ? 1 : -1),
+            (a: number, c: any) => (a += c.positive ? 1 : -1),
             0
           );
           let bCommentRating = b.ratings.reduce(
-            (b: number, c: any) => (b + c.positive ? 1 : -1),
+            (b: number, c: any) => (b += c.positive ? 1 : -1),
             0
           );
 
@@ -66,8 +67,6 @@ class Topic extends React.Component<TopicProps, TopicState> {
         });
 
         this.setState({ topic: data, isLoading: false });
-
-        console.log(data);
 
         if (this.context.isAuth && data) {
           this.setState({
@@ -93,10 +92,6 @@ class Topic extends React.Component<TopicProps, TopicState> {
   };
 
   createComment = () => {
-    let commentBody = this.editorRef.current
-      .getInstance()
-      .toastMark.lineTexts.join("\r\n");
-
     fetch(`${process.env.REACT_APP_SERVER_URL}/comments`, {
       method: "POST",
       headers: new Headers({
@@ -105,12 +100,13 @@ class Topic extends React.Component<TopicProps, TopicState> {
       }),
       body: JSON.stringify({
         topicId: this.state.topic.id,
-        body: commentBody,
+        body: this.editorRef.current.getInstance().getMarkdown(),
       }),
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        this.editorRef.current.getInstance().setMarkdown("", false);
+
         this.fetchTopic();
       });
   };
@@ -139,7 +135,7 @@ class Topic extends React.Component<TopicProps, TopicState> {
         const { title, body, user, ratings, id, comments } = this.state.topic;
 
         const ratingsTotal = ratings.reduce(
-          (a: number, c: any) => (a + c.positive ? 1 : -1),
+          (a: number, c: any) => (a += c.positive ? 1 : -1),
           0
         );
 
@@ -189,7 +185,7 @@ class Topic extends React.Component<TopicProps, TopicState> {
                   {this.state.topic.comments.map((comment: any) => {
                     return (
                       <Comment
-                        // key={uuid()}
+                        key={uuid()}
                         comment={comment}
                         id={comment.id}
                         vote={comment.rating}

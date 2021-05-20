@@ -23,7 +23,7 @@ export interface RegisterState {
   email: string;
   password: string;
   passwordVerify: string;
-  registered: boolean;
+  validated: boolean;
   errors: Array<string>;
 }
 
@@ -40,43 +40,82 @@ class Register extends React.Component<RegisterProps, RegisterState> {
       email: "",
       password: "",
       passwordVerify: "",
-      registered: false,
+      validated: false,
       errors: [],
     };
   }
+
+  componentDidUpdate(prevProps: RegisterProps, prevState: RegisterState) {
+    if (this.state.validated) {
+      if (
+        prevState.firstName !== this.state.firstName ||
+        prevState.lastName !== this.state.lastName ||
+        prevState.username !== this.state.username ||
+        prevState.email !== this.state.email ||
+        prevState.password !== this.state.password ||
+        prevState.passwordVerify !== this.state.passwordVerify
+      ) {
+        this.validateForm();
+      }
+    }
+  }
+
+  validateForm = (): boolean => {
+    let errors = [];
+
+    this.state.firstName.length < 1 && errors.push("firstName");
+    this.state.lastName.length < 1 && errors.push("lastName");
+    this.state.username.length < 6 && errors.push("username");
+    !this.state.email.match(
+      /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
+    ) && errors.push("email");
+    this.state.password.length < 8 && errors.push("password");
+    this.state.password !== this.state.passwordVerify &&
+      errors.push("passwordVerify");
+
+    this.setState({
+      errors,
+      validated: true,
+    });
+
+    if (errors.length !== 0) return false;
+    return true;
+  };
 
   handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
 
     const { username, password, email, firstName, lastName } = this.state;
 
-    fetch(`${process.env.REACT_APP_SERVER_URL}/users/register`, {
-      method: "POST",
-      body: JSON.stringify({
-        username,
-        password,
-        email,
-        firstName,
-        lastName,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
+    if (this.validateForm()) {
+      fetch(`${process.env.REACT_APP_SERVER_URL}/users/register`, {
+        method: "POST",
+        body: JSON.stringify({
+          username,
+          password,
+          email,
+          firstName,
+          lastName,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
 
-        if (data.token) {
-          this.context.setToken(data.token); //login
-          //TODO: Handle redirect to home page
-        } else {
-          //TODO: Handle failed register
-          this.setState({
-            errors: ["Ugh something messed up."],
-          });
-        }
-      });
+          if (data.token) {
+            this.context.setToken(data.token); //login
+            //TODO: Handle redirect to home page
+          } else {
+            //TODO: Handle failed register
+            this.setState({
+              errors: ["Ugh something messed up."],
+            });
+          }
+        });
+    }
   };
 
   handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -108,24 +147,23 @@ class Register extends React.Component<RegisterProps, RegisterState> {
     return (
       <Box>
         {this.context.isAuth && <Redirect to="/" />}
-        {this.state.errors.length > 0 && (
-          <div className="flex justify-center text-red-500 mb-4">
-            {this.state.errors[0]}
-          </div>
-        )}
-        <Form onSubmit={this.handleSubmit}>
+        <Form>
           <FormRow>
             <FormInput
               id="firstName"
               label="First Name"
               onChange={this.handleChange}
               value={this.state.firstName}
+              error={this.state.errors.includes("firstName")}
+              hint={"* Required"}
             />
             <FormInput
               id="lastName"
               label="Last Name"
               onChange={this.handleChange}
               value={this.state.lastName}
+              error={this.state.errors.includes("lastName")}
+              hint={"* Required"}
             />
           </FormRow>
           <FormInput
@@ -133,6 +171,8 @@ class Register extends React.Component<RegisterProps, RegisterState> {
             label="Username"
             onChange={this.handleChange}
             value={this.state.username}
+            error={this.state.errors.includes("username")}
+            hint={"* Your username must be 6 characters or longer."}
           />
           <FormInput
             id="email"
@@ -140,6 +180,8 @@ class Register extends React.Component<RegisterProps, RegisterState> {
             type="email"
             onChange={this.handleChange}
             value={this.state.email}
+            error={this.state.errors.includes("email")}
+            hint={"* Your email is not valid."}
           />
           <FormRow>
             <FormInput
@@ -148,6 +190,8 @@ class Register extends React.Component<RegisterProps, RegisterState> {
               type="password"
               onChange={this.handleChange}
               value={this.state.password}
+              error={this.state.errors.includes("password")}
+              hint={"* Your password must be at least 8 characters long."}
             />
             <FormInput
               id="passwordVerify"
@@ -155,9 +199,13 @@ class Register extends React.Component<RegisterProps, RegisterState> {
               type="password"
               onChange={this.handleChange}
               value={this.state.passwordVerify}
+              error={this.state.errors.includes("passwordVerify")}
+              hint={"* Your password does not match."}
             />
           </FormRow>
-          <Button type="submit">Register</Button>
+          <div className="flex justify-center p-6">
+            <Button onClick={this.handleSubmit}>Submit</Button>
+          </div>
         </Form>
       </Box>
     );

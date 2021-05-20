@@ -2,6 +2,7 @@ import * as React from "react";
 import tw from "tailwind-styled-components";
 import { Link } from "react-router-dom";
 import UserContext from "../contexts/UserContext";
+import styled from "styled-components";
 
 export interface HeaderProps {}
 
@@ -19,7 +20,11 @@ class Header extends React.Component<HeaderProps, HeaderState> {
     return (
       <HeaderWrapper>
         <Nav>
-          <NavBrand>Header</NavBrand>
+          <Link to="/">
+            <NavBrand>
+              <img src="./brand.png" />
+            </NavBrand>
+          </Link>
           <NavMenuItems>
             <Link to={`/`}>
               <MenuItem>Home</MenuItem>
@@ -48,7 +53,8 @@ class Header extends React.Component<HeaderProps, HeaderState> {
 export default Header;
 
 const HeaderWrapper = tw.div`
-  bg-gray-800
+  bg-black
+  bg-opacity-60
   py-4
   text-gray-100
   shadow-xl
@@ -57,18 +63,27 @@ const HeaderWrapper = tw.div`
 
 const Nav = tw.div`container mx-auto flex justify-between items-center`;
 
-const NavBrand = tw.div``;
+const NavBrand = tw.div`w-72`;
 
 const NavMenuItems = tw.div`flex`;
 
-const MenuItem = tw.div`
+const MenuItemPre = styled.div`
+  background-color: rgba(0, 145, 173, var(--tw-bg-opacity));
+  font-family: "Roboto", sans-serif;
+`;
+
+const MenuItem = tw(MenuItemPre)`
   mx-2
   px-3 
   py-1 
   border
-  bg-gray-900
+  bg-opacity-100
   border-gray-800
-
+  filter
+  hover:border-opacity-50
   hover:border-gray-300
   cursor-pointer
+  text-black
+  text-lg
+  font-normal
 `;

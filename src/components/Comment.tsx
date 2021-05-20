@@ -9,6 +9,7 @@ import { Editor } from "@toast-ui/react-editor";
 import { SyntheticEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
+import { ValidationMsg } from "./StyledComponents";
 
 interface IAuthor {
   id: number;
@@ -32,6 +33,9 @@ export interface CommentProps {
 export interface CommentState {
   isCommentOwner: boolean;
   isEditing: boolean;
+  voteTotal: number;
+  validated: false;
+  error: string;
 }
 
 class Comment extends React.Component<CommentProps, CommentState> {
@@ -44,7 +48,22 @@ class Comment extends React.Component<CommentProps, CommentState> {
     this.state = {
       isCommentOwner: false,
       isEditing: false,
+      voteTotal: 0,
+      validated: false,
+      error: "",
     };
+  }
+
+  componentDidMount() {
+    if (
+      this.context.isAuth &&
+      this.state.isCommentOwner !==
+        (this.context.user.id === this.props.author.id)
+    ) {
+      this.setState({
+        isCommentOwner: this.context.user.id === this.props.author.id,
+      });
+    }
   }
 
   componentDidUpdate() {
@@ -62,13 +81,26 @@ class Comment extends React.Component<CommentProps, CommentState> {
   toggleEdit = () => {
     this.setState({
       isEditing: !this.state.isEditing,
+      error: "",
+      validated: false,
     });
   };
 
+  validateForm = (): boolean => {
+    let error = "";
+
+    if (this.editorRef.current.getInstance().getMarkdown().length < 10)
+      error = "Please enter 10 characters or more.";
+
+    this.setState({ error });
+    if (error === "") return true;
+    return false;
+  };
+
   updateComment = () => {
-    let commentBody = this.editorRef.current
-      .getInstance()
-      .toastMark.lineTexts.join("\r\n");
+    if (!this.validateForm()) {
+      return;
+    }
 
     fetch(`${process.env.REACT_APP_SERVER_URL}/comments/${this.props.id}`, {
       method: "PUT",
@@ -77,7 +109,7 @@ class Comment extends React.Component<CommentProps, CommentState> {
         "Content-Type": "application/json",
       }),
       body: JSON.stringify({
-        body: commentBody,
+        body: this.editorRef.current.getInstance().getMarkdown(),
       }),
     })
       .then((res) => res.json())
@@ -101,6 +133,7 @@ class Comment extends React.Component<CommentProps, CommentState> {
   };
 
   changeRating = (event: SyntheticEvent, positive: boolean) => {
+    console.log(positive);
     fetch(
       `${process.env.REACT_APP_SERVER_URL}/ratings/comment/${this.props.id}`,
       {
@@ -119,10 +152,26 @@ class Comment extends React.Component<CommentProps, CommentState> {
   };
 
   render() {
-    let voteTotal = this.props.comment.ratings.reduce(
-      (a: number, c: any) => (a + c.positive ? 1 : -1),
-      0
-    );
+    let voteTotal = this.props.comment.ratings.reduce((a, c) => {
+      a += c.positive ? 1 : -1;
+      return a;
+    }, 0);
+
+    let voted = false;
+    let votedPositive = false;
+
+    if (this.context.isAuth) {
+      voted =
+        this.props.comment.ratings.filter((r) => {
+          if (r.userId === this.context.user.id) return true;
+          return false;
+        }).length > 0;
+      votedPositive =
+        this.props.comment.ratings.filter((r) => {
+          if (r.userId === this.context.user.id && r.positive) return true;
+          return false;
+        }).length > 0;
+    }
 
     return (
       <Container>
@@ -131,7 +180,9 @@ class Comment extends React.Component<CommentProps, CommentState> {
             style={{ cursor: "pointer" }}
             onClick={(e) => this.changeRating(e, true)}
           />
-          <VoteCount>{voteTotal}</VoteCount>
+          <VoteCount $voted={voted} $positive={votedPositive}>
+            {voteTotal}
+          </VoteCount>
           <FiChevronDown
             style={{ cursor: "pointer" }}
             onClick={(e) => this.changeRating(e, false)}
@@ -140,11 +191,14 @@ class Comment extends React.Component<CommentProps, CommentState> {
         <Content>
           <Body className="markdown-body">
             {this.state.isEditing ? (
-              <Editor
-                height="200px"
-                initialValue={this.props.body}
-                ref={this.editorRef}
-              />
+              <>
+                <Editor
+                  height="200px"
+                  initialValue={this.props.body}
+                  ref={this.editorRef}
+                />
+                <ValidationMsg>{this.state.error}</ValidationMsg>
+              </>
             ) : (
               <ReactMarkdown remarkPlugins={[gfm]} children={this.props.body} />
             )}
@@ -180,8 +234,9 @@ export default Comment;
 
 const Container = tw.div`flex bg-gray-200 text-black`;
 const VoteMeta = tw.div`flex flex-col items-center px-4 py-2 bg-gray-300 text-xl`;
-const VoteCount = tw.span<{ $positive?: boolean }>`
-  ${(p) => (!p.$positive ? "text-blue-500" : "text-yellow-800")}
+const VoteCount = tw.span<{ $voted: boolean; $positive: boolean }>`
+  ${(p) =>
+    p.$voted ? (!p.$positive ? "text-yellow-600" : "text-blue-700") : ""}
 `;
 const Body = tw.div`p-4 border-b border-gray-300`;
 const Controls = tw.div`self-end text-sm pr-2 py-1`;

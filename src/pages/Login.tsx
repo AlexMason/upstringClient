@@ -2,12 +2,17 @@ import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
 import { Link, Redirect } from "react-router-dom";
 import UserContext, { ContextProps } from "../contexts/UserContext";
+
+import styled from "styled-components";
+import tw from "tailwind-styled-components";
 import {
-  LoginRegisterBox as Box,
-  Form,
-  Label,
-  Input,
+  Box,
   Button,
+  Form,
+  FormGroup,
+  Hint,
+  Input,
+  Label,
 } from "../components/StyledComponents";
 
 export interface LoginProps {}
@@ -81,37 +86,71 @@ class Login extends React.Component<LoginProps, LoginState> {
             Your username or password was incorrect.
           </div>
         )}
-        <Form onSubmit={this.handleSubmit}>
+        <Form>
           {!this.context.isAuth && (
             <>
-              <Label>Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="username"
-                value={this.state.username}
-                onChange={this.handleChange}
-              />
-              <Label>Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="password"
-                value={this.state.password}
-                onChange={this.handleChange}
-              />{" "}
+              <FormGroup>
+                <Label>Username:</Label>
+                <Hint>Different from your email in most cases</Hint>
+                <Input
+                  id="username"
+                  type="text"
+                  value={this.state.username}
+                  onChange={this.handleChange}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label>Password:</Label>
+                <Hint>Must have at least 8 characters</Hint>
+                <Input
+                  id="password"
+                  type="password"
+                  value={this.state.password}
+                  onChange={this.handleChange}
+                />{" "}
+              </FormGroup>
             </>
           )}
-          <Button type="submit">
-            {this.context.isAuth ? "Logout?" : "Login"}
-          </Button>
+          <div className="flex justify-center mt-6 mb-4 gap-10">
+            <Link to="/register">
+              <Button>Register</Button>
+            </Link>
+            <Button onClick={this.handleSubmit}>
+              {this.context.isAuth ? "Logout?" : "Login"}
+            </Button>
+          </div>
         </Form>
-        <Link to="/register">
-          <Button>Register</Button>
-        </Link>
       </Box>
     );
   }
 }
 
 export default Login;
+
+// const Box = tw.div`bg-black bg-opacity-40 shadow-lg p-4 w-5/12 mx-auto`;
+
+// const Form = tw.div`flex flex-col mx-4 my-2`;
+
+// const FormGroup = tw.div`flex flex-col mb-3`;
+
+// const Label = tw.label`font-medium`;
+// const Hint = tw.div`text-sm pl-1.5 mb-1 text-white text-opacity-50`;
+
+// const InputPre = styled.input`
+//   color: rgba(46, 220, 255, 1);
+// `;
+// const Input = tw(InputPre)`
+// border-none
+// outline-none
+// rounded-none
+// bg-black
+// bg-opacity-20
+// ring-2
+// ring-white
+// ring-opacity-50
+// p-1
+// px-2
+// mx-1.5
+// `;
+
+// const Button = tw.button`border rounded-none p-1 px-2`;

@@ -3,6 +3,10 @@ import { ChangeEvent } from "react";
 import { FiXSquare } from "react-icons/fi";
 import tw from "tailwind-styled-components";
 
+interface ITag {
+  name: string;
+}
+
 export interface TagsSelectorProps {
   onChange?: CallableFunction;
   selectedTags?: string[];
@@ -23,7 +27,7 @@ class TagsSelector extends React.Component<
     this.state = {
       tagInput: "",
       selectedTags: this.props.selectedTags || [],
-      recommendedTags: ["TypeScript", "React", "NodeJS"],
+      recommendedTags: [],
     };
   }
 
@@ -34,14 +38,35 @@ class TagsSelector extends React.Component<
     if (prevState.selectedTags !== this.state.selectedTags) {
       this.props.onChange && this.props.onChange(this.state.selectedTags);
     }
+
+    if (
+      prevState.tagInput !== this.state.tagInput &&
+      this.state.tagInput.length > 2
+    ) {
+      fetch(`${process.env.REACT_APP_SERVER_URL}/tags/${this.state.tagInput}`)
+        .then((res) => res.json())
+        .then((tags) => {
+          this.setState({
+            recommendedTags: tags.map((t: ITag) => t.name),
+          });
+        });
+    }
+
+    if (
+      prevState.tagInput !== this.state.tagInput &&
+      this.state.tagInput.length < 3
+    ) {
+      this.setState({ recommendedTags: [] });
+    }
   };
 
   getRecommendedTags = () => {};
 
   handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
-
-    this.setState({ tagInput: event.target.value });
+    if (event.target.value !== ",") {
+      this.setState({ tagInput: event.target.value });
+    }
   };
 
   handleSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -76,6 +101,13 @@ class TagsSelector extends React.Component<
     }
   };
 
+  addTag = (tag: string) => {
+    this.setState({
+      selectedTags: [...this.state.selectedTags, tag],
+      tagInput: "",
+    });
+  };
+
   deleteTag = (deletedTag: string) => {
     this.setState({
       selectedTags: this.state.selectedTags.filter((tag) => {
@@ -92,6 +124,7 @@ class TagsSelector extends React.Component<
       <>
         <TagsContainer>
           <Tags>
+            <Tag className="invisible">&nbsp;</Tag>
             {this.state.selectedTags.map((tag) => {
               return (
                 <Tag>
@@ -105,12 +138,30 @@ class TagsSelector extends React.Component<
               );
             })}
           </Tags>
-          <TagsInput
-            value={this.state.tagInput}
-            onKeyDown={this.handleSubmit}
-            onChange={this.handleChange}
-            placeholder="Type to start adding tags, then press enter or ',' to add them."
-          />
+          <InputWrapper>
+            <TagsInput
+              value={this.state.tagInput}
+              onKeyDown={this.handleSubmit}
+              onChange={this.handleChange}
+              placeholder="Type to start adding tags, then press enter or ',' to add them."
+            />
+            <Suggestions
+              hidden={this.state.recommendedTags.length < 1}
+              style={{ minWidth: "100px" }}
+            >
+              {this.state.recommendedTags.map((t) => {
+                return (
+                  <SuggestionItem
+                    onClick={() => {
+                      this.addTag(t);
+                    }}
+                  >
+                    {t}
+                  </SuggestionItem>
+                );
+              })}
+            </Suggestions>
+          </InputWrapper>
         </TagsContainer>
       </>
     );
@@ -120,6 +171,21 @@ class TagsSelector extends React.Component<
 export default TagsSelector;
 
 const Container = tw.div`p-2 bg-white`;
+
+const InputWrapper = tw.div`relative flex flex-grow`;
+const Suggestions = tw.div`
+absolute
+left-0
+top-10
+bg-white
+rounded-lg
+p-2
+`;
+const SuggestionItem = tw.div`
+py-1
+border-t
+cursor-pointer
+`;
 
 const TagsContainer = tw.div`
 bg-white
@@ -151,4 +217,5 @@ text-gray-700
 const TagsInput = tw.input`
   flex-grow
   focus:outline-none
+  w-full
 `;

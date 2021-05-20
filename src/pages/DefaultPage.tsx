@@ -2,7 +2,9 @@ import * as React from "react";
 import { Header, Footer } from "../components";
 import tw from "tailwind-styled-components";
 
-export interface DefaultPageProps {}
+export interface DefaultPageProps {
+  centered?: boolean;
+}
 
 export interface DefaultPageState {}
 
@@ -17,7 +19,9 @@ class DefaultPage extends React.Component<DefaultPageProps, DefaultPageState> {
       <PageWrapper>
         <Header />
 
-        <ContentWrapper>{this.props.children}</ContentWrapper>
+        <ContentWrapper $centered={this.props.centered}>
+          {this.props.children}
+        </ContentWrapper>
 
         <Footer />
       </PageWrapper>
@@ -27,12 +31,13 @@ class DefaultPage extends React.Component<DefaultPageProps, DefaultPageState> {
 
 export default DefaultPage;
 
-const PageWrapper = tw.div`flex flex-col min-h-full bg-gray-900`;
+const PageWrapper = tw.div`flex flex-col min-h-full bg-black bg-opacity-90`;
 
-const ContentWrapper = tw.div`
+const ContentWrapper = tw.div<{ $centered?: boolean }>`
   container
   mx-auto
   flex-grow
   flex
   flex-col
+  ${(p) => (p.$centered ? "justify-center" : "")}
 `;

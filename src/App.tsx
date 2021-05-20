@@ -40,6 +40,5 @@ export default App;
 
 const AppWrapper = tw.div`
   h-full
-  bg-gray-900
   text-gray-50
 `;

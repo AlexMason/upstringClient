@@ -26,11 +26,12 @@ class Footer extends React.Component<FooterProps, FooterState> {
 export default Footer;
 
 const FooterWrapper = tw.div`
-  bg-gray-800
+bg-black
+bg-opacity-60
   text-gray-100
   py-4
   mt-12
-  shadow-xl
+  shadow-2xl
 `;
 
 const Copyright = tw.div`

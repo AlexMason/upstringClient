@@ -13,6 +13,7 @@ import {
   FormInput,
   Label,
   NewTopicBox,
+  ValidationMsg,
 } from "../components/StyledComponents";
 import UserContext from "../contexts/UserContext";
 import tw from "tailwind-styled-components";
@@ -31,6 +32,8 @@ export interface NewTopicState {
   body: string | null;
   status: string;
   selectedTags: string[];
+  validated: boolean;
+  errors: string[];
 }
 
 class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
@@ -45,8 +48,25 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
       body: null,
       status: "public",
       selectedTags: [],
+      validated: false,
+      errors: [],
     };
   }
+
+  validateForm = (): boolean => {
+    let errors = [];
+
+    if (this.state.title.length < 10) errors.push("title");
+    if (this.state.body!.length < 10) errors.push("body");
+
+    this.setState({ validated: true, errors: errors });
+
+    if (errors.length === 0) {
+      return true;
+    }
+
+    return false;
+  };
 
   componentDidMount() {
     if (this.props.edit) {
@@ -70,11 +90,20 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
     }
   }
 
+  componentDidUpdate(prevProps: NewTopicProps, prevState: NewTopicState) {
+    if (this.state.validated) {
+      if (
+        prevState.title !== this.state.title ||
+        prevState.body !== this.state.body
+      ) {
+        this.validateForm();
+      }
+    }
+  }
+
   handleEditorChange = (data: any) => {
     this.setState({
-      body: this.editorRef.current
-        .getInstance()
-        .toastMark.lineTexts.join("\r\n"),
+      body: this.editorRef.current.getInstance().getMarkdown(),
     });
   };
 
@@ -95,6 +124,10 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
     const { title, body, status, selectedTags } = this.state;
 
     console.log(event);
+
+    if (!this.validateForm()) {
+      return;
+    }
 
     if (this.props.edit) {
       console.log("edit");
@@ -167,6 +200,8 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
                 label="Title"
                 onChange={this.handleChange}
                 value={this.state.title}
+                error={this.state.errors.includes("title")}
+                hint={"* Please provide a well thought out title."}
               />
 
               <FormGroup>
@@ -178,6 +213,11 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
                     onChange={this.handleEditorChange}
                   />
                 </EditorWrapper>
+                <ValidationMsg>
+                  {this.state.errors.includes("body")
+                    ? "* You must have at least 10 characters in your description."
+                    : ""}
+                </ValidationMsg>
               </FormGroup>
 
               <FormGroup>
