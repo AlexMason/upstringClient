@@ -12,25 +12,22 @@ import {
 } from "./pages";
 
 import Tags from "./components/TagsSelector";
+import styled from "styled-components";
 
 function App() {
   return (
     <Router>
       <AppWrapper>
-        <Page>
-          <Switch>
-            <Route path="/login" component={Login} />
-            <Route path="/register" component={Register} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/topic/new" component={EditTopic} />
-            <Route path="/topic/edit/:id">
-              <EditTopic edit />
-            </Route>
-            <Route path="/topic/:id" component={Topic} />
-            <Route path="/tags" component={Tags} />
-            <Route path="/" component={Home} />
-          </Switch>
-        </Page>
+        <Switch>
+          <PageRoute centered path="/login" component={<Login />} />
+          <PageRoute centered path="/register" component={<Register />} />
+          <PageRoute path="/profile" component={<Profile />} />
+          <PageRoute centered path="/topic/new" component={<EditTopic />} />
+          <PageRoute path="/topic/edit/:id" component={<EditTopic edit />} />
+          <PageRoute path="/topic/:id" component={<Topic />} />
+          <PageRoute path="/tags" component={<Tags />} />
+          <PageRoute path="/" component={<Home />} />
+        </Switch>
       </AppWrapper>
     </Router>
   );
@@ -38,7 +35,23 @@ function App() {
 
 export default App;
 
-const AppWrapper = tw.div`
+type PageRouteProps = {
+  path: string;
+  component: any;
+  centered?: boolean;
+};
+
+const PageRoute: React.FC<PageRouteProps> = ({ path, centered, component }) => (
+  <Route path={path}>
+    <Page centered={centered}>{component}</Page>
+  </Route>
+);
+
+const AppWrapperPre = styled.div`
+  font-family: "Roboto", sans-serif;
+`;
+
+const AppWrapper = tw(AppWrapperPre)`
   h-full
   text-gray-50
 `;

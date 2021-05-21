@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ChangeEvent } from "react";
-import { FiXSquare } from "react-icons/fi";
+import { IoClose } from "react-icons/io5";
 import tw from "tailwind-styled-components";
 
 interface ITag {
@@ -129,7 +129,8 @@ class TagsSelector extends React.Component<
               return (
                 <Tag>
                   {tag}{" "}
-                  <FiXSquare
+                  <IoClose
+                    className="text-sm"
                     onClick={() => {
                       this.deleteTag(tag);
                     }}
@@ -177,7 +178,7 @@ const Suggestions = tw.div`
 absolute
 left-0
 top-10
-bg-white
+bg-black
 rounded-lg
 p-2
 `;
@@ -188,8 +189,8 @@ cursor-pointer
 `;
 
 const TagsContainer = tw.div`
-bg-white
-text-black
+bg-black
+text-white
 text-sm
 border-2
 border-gray-300
@@ -208,14 +209,19 @@ gap-2
 const Tag = tw.div`
 flex
 p-1
+pl-1.5
 items-center
 gap-1 border
-rounded
-bg-gray-200
-text-gray-700
+rounded-lg
+bg-white
+bg-opacity-10
+text-white
+leading-snug
 `;
 const TagsInput = tw.input`
   flex-grow
   focus:outline-none
   w-full
+  text-white
+  bg-black
 `;

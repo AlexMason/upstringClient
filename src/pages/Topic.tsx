@@ -2,7 +2,7 @@ import * as React from "react";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import tw from "tailwind-styled-components";
-import "./markdown.css";
+import "./darkdown.css";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { RouteComponentProps, withRouter } from "react-router";
 import UserContext from "../contexts/UserContext";
@@ -15,6 +15,7 @@ import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor } from "@toast-ui/react-editor";
 import { Button } from "../components/StyledComponents";
 import uuid from "react-uuid";
+import styled from "styled-components";
 
 export interface IPathParams {
   id: string;
@@ -139,6 +140,14 @@ class Topic extends React.Component<TopicProps, TopicState> {
           0
         );
 
+        const hasRated = ratings.some((r: any) => {
+          return r.userId === this.context.user.id;
+        });
+
+        const rating = ratings.some((r: any) => {
+          return r.userId === this.context.user.id && r.positive;
+        });
+
         return (
           <>
             {user && (
@@ -150,17 +159,21 @@ class Topic extends React.Component<TopicProps, TopicState> {
                   </TopicBody>
                   <TopicMeta>
                     <TopicVoting>
-                      <FiChevronDown
-                        onClick={() => {
-                          this.handleRating(false);
-                        }}
-                      />
-                      <span>{ratingsTotal}</span>
-                      <FiChevronUp
-                        onClick={() => {
-                          this.handleRating(true);
-                        }}
-                      />
+                      <VoteUp $active={hasRated && !rating}>
+                        <FiChevronDown
+                          onClick={() => {
+                            this.handleRating(false);
+                          }}
+                        />
+                      </VoteUp>
+                      <VoteNum>{ratingsTotal}</VoteNum>
+                      <VoteDown $active={hasRated && rating}>
+                        <FiChevronUp
+                          onClick={() => {
+                            this.handleRating(true);
+                          }}
+                        />
+                      </VoteDown>
                     </TopicVoting>
                     <TopicControls>
                       {this.state.isTopicOwner && (
@@ -176,7 +189,10 @@ class Topic extends React.Component<TopicProps, TopicState> {
                           |{" "}
                         </>
                       )}
-                      posted by {user.firstName} ({user.username})
+                      posted by{" "}
+                      <Author>
+                        {user.firstName} ({user.username})
+                      </Author>
                     </TopicControls>
                   </TopicMeta>
                 </TopicContainer>
@@ -224,14 +240,38 @@ class Topic extends React.Component<TopicProps, TopicState> {
 
 export default withRouter(Topic);
 
-const Comments = tw.div`mt-6 flex flex-col gap-3`;
+const VotePre = styled.div`
+  color: rgba(0, 145, 173, 1);
+`;
+const VoteUp = tw.div<{
+  $active: boolean;
+}>`cursor-pointer text-white ${(p) => (p.$active ? "" : "text-opacity-40")}`;
+const VoteNum = tw(VotePre)``;
+const VoteDown = tw.div<{
+  $active: boolean;
+}>`cursor-pointer text-white  ${(p) => (p.$active ? "" : "text-opacity-40")}`;
+
+const Comments = tw.div`mt-6 flex flex-col gap-4 `;
 const CreateComment = tw.div`mt-6 flex flex-col`;
 const CreateCommentMeta = tw.div`mt-2 self-end`;
 
-const TopicContainer = tw.div`text-gray-800 bg-gray-200`;
-const TopicTitle = tw.div`p-4 text-2xl bg-gray-400 border-b border-gray-300`;
+const TopicCommentsPre = styled.div`
+  box-shadow: 0px 0px 10px -4px rgba(255, 255, 255, 1);
+`;
+const TopicContainer = tw(
+  TopicCommentsPre
+)`text-white bg-black bg-opacity-50 rounded-2xl`;
+const TopicTitlePre = styled.div`
+  font-family: "Montserrat";
+  font-weight: 500;
+`;
+const TopicTitle = tw(TopicTitlePre)`p-4 text-2xl bg-black rounded-t-2xl`;
 const TopicBody = tw.div`p-4 shadow-inner`;
-const TopicMeta = tw.div`px-4 py-2 flex justify-between border-t border-gray-500`;
+const TopicMeta = tw.div`px-4 py-2 flex justify-between border-t border-gray-500 bg-black rounded-b-2xl`;
 const TopicVoting = tw.div`flex items-center gap-2`;
 const TopicControls = tw.div``;
 const DeleteButton = tw.span`cursor-pointer`;
+const Author = styled.span`
+  color: rgba(0, 145, 173, 1);
+  cursor: pointer;
+`;

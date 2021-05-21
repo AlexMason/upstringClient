@@ -79,8 +79,14 @@ class Login extends React.Component<LoginProps, LoginState> {
 
   render() {
     return (
-      <Box>
+      <Box className="mb-36">
         {this.context.isAuth && <Redirect to="/" />}
+        <h2
+          style={{ fontFamily: "'Fira Code', monospace" }}
+          className="text-3xl text-center pb-5 mb-5 border-b font-light"
+        >
+          {"[ login ]"}
+        </h2>
         {this.state.error && (
           <div className="flex justify-center text-red-500 mb-4">
             Your username or password was incorrect.
@@ -111,13 +117,16 @@ class Login extends React.Component<LoginProps, LoginState> {
               </FormGroup>
             </>
           )}
-          <div className="flex justify-center mt-6 mb-4 gap-10">
-            <Link to="/register">
-              <Button>Register</Button>
-            </Link>
-            <Button onClick={this.handleSubmit}>
+          <div className="flex flex-col justify-center mt-6 mb-4 gap-7 ">
+            <Button className="w-5/12 mx-auto" onClick={this.handleSubmit}>
               {this.context.isAuth ? "Logout?" : "Login"}
             </Button>
+            <hr />
+            <Link to="/register">
+              <RegisterLink className="w-max text-xl mx-auto underline font-normal">
+                New User? Click here to register.
+              </RegisterLink>
+            </Link>
           </div>
         </Form>
       </Box>
@@ -126,6 +135,12 @@ class Login extends React.Component<LoginProps, LoginState> {
 }
 
 export default Login;
+
+const RegisterLink = styled.div`
+  &:hover {
+    color: rgba(46, 220, 255, 1);
+  }
+`;
 
 // const Box = tw.div`bg-black bg-opacity-40 shadow-lg p-4 w-5/12 mx-auto`;
 

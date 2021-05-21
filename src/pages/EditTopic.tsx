@@ -229,8 +229,8 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
                   }}
                 />
               </FormGroup>
-
-              <Button onClick={this.handleSubmit}>
+              {/* <hr className="mb-3 w-3/12 mx-auto" /> */}
+              <Button className="w-4/12 mx-auto" onClick={this.handleSubmit}>
                 {this.props.edit ? "Update" : "Create"}
               </Button>
             </Form>
@@ -244,3 +244,4 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
 export default withRouter(NewTopic);
 
 const EditorWrapper = tw.div`text-gray-900`;
+const EditorArea = tw.div`bg-red-500`;

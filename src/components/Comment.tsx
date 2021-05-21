@@ -176,24 +176,20 @@ class Comment extends React.Component<CommentProps, CommentState> {
     return (
       <Container>
         <VoteMeta>
-          <FiChevronUp
-            style={{ cursor: "pointer" }}
-            onClick={(e) => this.changeRating(e, true)}
-          />
-          <VoteCount $voted={voted} $positive={votedPositive}>
-            {voteTotal}
-          </VoteCount>
-          <FiChevronDown
-            style={{ cursor: "pointer" }}
-            onClick={(e) => this.changeRating(e, false)}
-          />
+          <VoteUp $active={voted && votedPositive}>
+            <FiChevronUp onClick={(e) => this.changeRating(e, true)} />
+          </VoteUp>
+          <VoteNum>{voteTotal}</VoteNum>
+          <VoteDown $active={voted && !votedPositive}>
+            <FiChevronDown onClick={(e) => this.changeRating(e, false)} />
+          </VoteDown>
         </VoteMeta>
         <Content>
           <Body className="markdown-body">
             {this.state.isEditing ? (
               <>
                 <Editor
-                  height="200px"
+                  height="100px"
                   initialValue={this.props.body}
                   ref={this.editorRef}
                 />
@@ -204,25 +200,30 @@ class Comment extends React.Component<CommentProps, CommentState> {
             )}
           </Body>
           <Controls>
-            {this.state.isEditing ? (
-              <>
-                <EditControl onClick={this.toggleEdit}>Cancel</EditControl>
-                <SaveControl onClick={this.updateComment}>Save</SaveControl>
-              </>
-            ) : (
-              <>
-                {this.state.isCommentOwner && (
-                  <EditControl onClick={this.toggleEdit}>Edit</EditControl>
-                )}
-                {this.state.isCommentOwner && (
-                  <DeleteControl onClick={this.deleteComment}>
-                    Delete
-                  </DeleteControl>
-                )}
-                {this.context.isAuth && <ReplyControl>Reply</ReplyControl>} by{" "}
-                {this.props.author.firstName} ({this.props.author.username})
-              </>
-            )}
+            <div className="float-right">
+              {this.state.isEditing ? (
+                <>
+                  <EditControl onClick={this.toggleEdit}>Cancel</EditControl>
+                  <SaveControl onClick={this.updateComment}>Save</SaveControl>
+                </>
+              ) : (
+                <>
+                  {this.state.isCommentOwner && (
+                    <EditControl onClick={this.toggleEdit}>Edit</EditControl>
+                  )}
+                  {this.state.isCommentOwner && (
+                    <DeleteControl onClick={this.deleteComment}>
+                      Delete
+                    </DeleteControl>
+                  )}
+                  {this.context.isAuth && <ReplyControl>Reply</ReplyControl>}
+                  by{" "}
+                  <Author>
+                    {this.props.author.firstName} ({this.props.author.username})
+                  </Author>
+                </>
+              )}
+            </div>
           </Controls>
         </Content>
       </Container>
@@ -230,23 +231,36 @@ class Comment extends React.Component<CommentProps, CommentState> {
   }
 }
 
+const VotePre = styled.div`
+  color: rgba(0, 145, 173, 1);
+`;
+const VoteUp = tw.div<{
+  $active: boolean;
+}>`cursor-pointer text-white ${(p) => (p.$active ? "" : "text-opacity-40")}`;
+const VoteNum = tw(VotePre)``;
+const VoteDown = tw.div<{
+  $active: boolean;
+}>`cursor-pointer text-white  ${(p) => (p.$active ? "" : "text-opacity-40")}`;
+
 export default Comment;
 
-const Container = tw.div`flex bg-gray-200 text-black`;
-const VoteMeta = tw.div`flex flex-col items-center px-4 py-2 bg-gray-300 text-xl`;
-const VoteCount = tw.span<{ $voted: boolean; $positive: boolean }>`
-  ${(p) =>
-    p.$voted ? (!p.$positive ? "text-yellow-600" : "text-blue-700") : ""}
+const ContainerPre = styled.div`
+  box-shadow: 0px 0px 10px -5px rgba(255, 255, 255, 1);
 `;
-const Body = tw.div`p-4 border-b border-gray-300`;
-const Controls = tw.div`self-end text-sm pr-2 py-1`;
+const Container = tw(
+  ContainerPre
+)`flex bg-black bg-opacity-50 text-white rounded-2xl`;
+const VoteMeta = tw.div`flex flex-col items-center px-4 py-2 bg-black text-xl border-r-2 border-white border-opacity-10 rounded-l-2xl asdasdasd`;
+
+const Body = tw.div`p-4`;
+const Controls = tw.div`flex justify-end text-sm pr-2 py-1 bg-black rounded-br-2xl`;
 const Content = tw.div`flex-grow flex flex-col justify-between`;
 
 const ControlBase = styled.span`
   cursor: pointer;
 
   &::after {
-    color: black;
+    color: white;
     content: " | ";
     cursor: default;
   }
@@ -254,7 +268,11 @@ const ControlBase = styled.span`
 
 const EditControl = tw(ControlBase)``;
 const DeleteControl = tw(ControlBase)`
-text-red-500
+hover:text-red-500
 `;
 const ReplyControl = tw(ControlBase)``;
 const SaveControl = tw.span`cursor-pointer`;
+const Author = styled.span`
+  color: rgba(0, 145, 173, 1);
+  cursor: pointer;
+`;

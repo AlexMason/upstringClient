@@ -147,6 +147,12 @@ class Register extends React.Component<RegisterProps, RegisterState> {
     return (
       <Box>
         {this.context.isAuth && <Redirect to="/" />}
+        <h2
+          style={{ fontFamily: "'Fira Code', monospace" }}
+          className="text-3xl text-center pb-5 mb-5 border-b font-light"
+        >
+          {"[ register ]"}
+        </h2>
         <Form>
           <FormRow>
             <FormInput
@@ -172,7 +178,7 @@ class Register extends React.Component<RegisterProps, RegisterState> {
             onChange={this.handleChange}
             value={this.state.username}
             error={this.state.errors.includes("username")}
-            hint={"* Your username must be 6 characters or longer."}
+            hint={"* Must be 6 characters or longer"}
           />
           <FormInput
             id="email"
@@ -181,7 +187,7 @@ class Register extends React.Component<RegisterProps, RegisterState> {
             onChange={this.handleChange}
             value={this.state.email}
             error={this.state.errors.includes("email")}
-            hint={"* Your email is not valid."}
+            hint={"* Must enter a valid email address"}
           />
           <FormRow>
             <FormInput
@@ -191,7 +197,7 @@ class Register extends React.Component<RegisterProps, RegisterState> {
               onChange={this.handleChange}
               value={this.state.password}
               error={this.state.errors.includes("password")}
-              hint={"* Your password must be at least 8 characters long."}
+              hint={"* Must be at least 8 characters long"}
             />
             <FormInput
               id="passwordVerify"
@@ -200,7 +206,7 @@ class Register extends React.Component<RegisterProps, RegisterState> {
               onChange={this.handleChange}
               value={this.state.passwordVerify}
               error={this.state.errors.includes("passwordVerify")}
-              hint={"* Your password does not match."}
+              hint={"* Passwords must match"}
             />
           </FormRow>
           <div className="flex justify-center p-6">

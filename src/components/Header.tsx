@@ -22,7 +22,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
         <Nav>
           <Link to="/">
             <NavBrand>
-              <img src="./brand.png" />
+              <img src={process.env.PUBLIC_URL + "./brand.png"} />
             </NavBrand>
           </Link>
           <NavMenuItems>

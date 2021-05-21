@@ -34,7 +34,15 @@ px-2
 mx-1.5
 `;
 
-export const Button = tw.button`border rounded-none p-1 px-2`;
+const ButtonPre = styled.button`
+  &:hover {
+    background-color: rgba(0, 145, 173, 0.8);
+    color: black;
+  }
+`;
+export const Button = tw(
+  ButtonPre
+)`border rounded-none p-1 px-2 text-lg font-medium`;
 
 export const FormRow = tw.div`flex gap-3`;
 export const Textarea = tw.textarea`mb-2 p-1 rounded-none text-black flex-grow`;
