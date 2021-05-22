@@ -221,7 +221,9 @@ class Topic extends React.Component<TopicProps, TopicState> {
                     <Editor ref={this.editorRef} height="200px" />
 
                     <CreateCommentMeta>
-                      <Button onClick={this.createComment}>Comment</Button>
+                      <CommentButton onClick={this.createComment}>
+                        Comment
+                      </CommentButton>
                     </CreateCommentMeta>
                   </CreateComment>
                 )}
@@ -239,6 +241,28 @@ class Topic extends React.Component<TopicProps, TopicState> {
 }
 
 export default withRouter(Topic);
+
+const ButtonPre = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 145, 173, 1);
+  cursor: pointer;
+
+  &:hover {
+    color: rgba(0, 145, 173, 1);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+
+    &:after {
+      content: " +";
+    }
+  }
+`;
+
+export const CommentButton = tw(ButtonPre)`
+  bg-black
+  px-5
+  py-1
+  rounded-2xl
+`;
 
 const VotePre = styled.div`
   color: rgba(0, 145, 173, 1);

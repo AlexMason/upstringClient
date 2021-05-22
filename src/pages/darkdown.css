@@ -59,6 +59,10 @@ ol > li {
   list-style-type: decimal;
 }
 
+.task-list-item {
+  list-style-type: none;
+}
+
 .markdown-body > p > code {
   font-family: "Fira Code", monospace;
   background-color: rgba(0, 0, 0, 0.45);
