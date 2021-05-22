@@ -42,6 +42,7 @@ class Home extends React.Component<HomeProps, HomeState> {
   }
 
   fetchTopics = () => {
+    console.log("REACT APP ENV: ", process.env.REACT_APP_SERVER_URL);
     fetch(`${process.env.REACT_APP_SERVER_URL}/topics`)
       .then((res) => res.json())
       .then((data: ITopicsData[]) => {
