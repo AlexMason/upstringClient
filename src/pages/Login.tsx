@@ -1,10 +1,8 @@
 import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
 import { Link, Redirect } from "react-router-dom";
-import UserContext, { ContextProps } from "../contexts/UserContext";
-
+import UserContext from "../contexts/UserContext";
 import styled from "styled-components";
-import tw from "tailwind-styled-components";
 import {
   Box,
   Button,

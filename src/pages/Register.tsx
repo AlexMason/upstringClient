@@ -1,14 +1,10 @@
 import * as React from "react";
 import { ChangeEvent, SyntheticEvent } from "react";
-import { ChangeEventHandler } from "react";
 import { Redirect } from "react-router";
 import {
   LoginRegisterBox as Box,
   Form,
-  Label,
-  Input,
   Button,
-  FormGroup,
   FormRow,
   FormInput,
 } from "../components/StyledComponents";

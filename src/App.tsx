@@ -11,8 +11,9 @@ import {
   DefaultPage as Page,
 } from "./pages";
 
-import Tags from "./components/TagsSelector";
 import styled from "styled-components";
+import React from "react";
+import Tag from "./pages/Tag";
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
           <PageRoute centered path="/topic/new" component={<EditTopic />} />
           <PageRoute path="/topic/edit/:id" component={<EditTopic edit />} />
           <PageRoute path="/topic/:id" component={<Topic />} />
-          <PageRoute path="/tags" component={<Tags />} />
+          <PageRoute path="/tag" component={<Tag />} />
           <PageRoute path="/" component={<Home />} />
         </Switch>
       </AppWrapper>

@@ -127,7 +127,7 @@ class TagsSelector extends React.Component<
             <Tag className="invisible">&nbsp;</Tag>
             {this.state.selectedTags.map((tag) => {
               return (
-                <Tag>
+                <Tag key={tag}>
                   {tag}{" "}
                   <IoClose
                     className="text-sm"
@@ -153,6 +153,7 @@ class TagsSelector extends React.Component<
               {this.state.recommendedTags.map((t) => {
                 return (
                   <SuggestionItem
+                    key={t}
                     onClick={() => {
                       this.addTag(t);
                     }}
@@ -170,8 +171,6 @@ class TagsSelector extends React.Component<
 }
 
 export default TagsSelector;
-
-const Container = tw.div`p-2 bg-white`;
 
 const InputWrapper = tw.div`relative flex flex-grow`;
 const Suggestions = tw.div`

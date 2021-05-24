@@ -2,29 +2,19 @@ import * as React from "react";
 import tw from "tailwind-styled-components";
 import { FiChevronDown, FiChevronUp, FiTag } from "react-icons/fi";
 import uuid from "react-uuid";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import UserContext from "../contexts/UserContext";
 import styled from "styled-components";
+import { IRating, ITag, ITopic } from "../interfaces";
+import Loading from "../components/Loading";
 
-export interface ITopicsData {
-  id: number;
-  title: string;
-  body: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: number;
-  user: any;
-  tags?: any[];
-  ratings?: any[];
-}
-
-export interface HomeProps {
-  history?: any;
-}
+export interface HomeProps extends RouteComponentProps {}
 
 export interface HomeState {
-  topics: Array<any>;
+  topics: ITopic[];
+  page: number;
+  scrollInterval?: NodeJS.Timer;
+  fetching: boolean;
 }
 
 class Home extends React.Component<HomeProps, HomeState> {
@@ -34,22 +24,66 @@ class Home extends React.Component<HomeProps, HomeState> {
     super(props);
     this.state = {
       topics: [],
+      page: 0,
+      scrollInterval: undefined,
+      fetching: false,
     };
   }
 
+  checkScroll = () => {
+    if (
+      window.innerHeight + window.pageYOffset >= document.body.scrollHeight &&
+      !this.state.fetching &&
+      this.state.page !== -1
+    ) {
+      console.log("rock bottom buddy");
+      this.setState(
+        {
+          fetching: true,
+          page: this.state.page + 1,
+        },
+        () => {
+          this.fetchPage();
+        }
+      );
+    }
+  };
+
   componentDidMount() {
     this.fetchTopics();
+    this.setState({
+      scrollInterval: setInterval(() => {
+        this.checkScroll();
+      }, 1000),
+    });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.scrollInterval!);
   }
 
   fetchTopics = () => {
-    console.log("REACT APP ENV: ", process.env.REACT_APP_SERVER_URL);
     fetch(`${process.env.REACT_APP_SERVER_URL}/topics`)
-      .then((res) => res.json())
-      .then((data: ITopicsData[]) => {
-        console.log(data);
-
+      .then((res) => {
+        return res.json();
+      })
+      .then((data: ITopic[]) => {
         this.setState({
           topics: data,
+        });
+      });
+  };
+
+  fetchPage = () => {
+    fetch(`${process.env.REACT_APP_SERVER_URL}/topics/page/${this.state.page}`)
+      .then((res) => {
+        return res.json();
+      })
+      .then((data: ITopic[]) => {
+        this.setState({
+          topics: [...this.state.topics, ...data],
+          fetching: false,
+          page: data.length === 0 ? -1 : this.state.page,
         });
       });
   };
@@ -83,9 +117,9 @@ class Home extends React.Component<HomeProps, HomeState> {
           </div>
         </UtilityBar>
         <TopicsContainer>
-          {this.state.topics.map((topic: any) => {
-            const ratingsTotal = topic.ratings.reduce(
-              (a: number, c: any) => (a += c.positive ? 1 : -1),
+          {this.state.topics.map((topic: ITopic) => {
+            const ratingsTotal = topic.ratings!.reduce(
+              (a: number, c: IRating) => (a += c.positive ? 1 : -1),
               0
             );
             return (
@@ -93,33 +127,44 @@ class Home extends React.Component<HomeProps, HomeState> {
                 key={uuid()}
                 id={topic.id}
                 title={topic.title}
-                tags={topic.tags.map((tag: any) => tag.name)}
-                comments={topic.comments.length}
+                tags={topic.tags!.map((tag: ITag) => tag.name)}
+                comments={topic.comments!.length}
                 answers={0}
                 vote={ratingsTotal}
                 author={{
-                  id: topic.user.id,
-                  firstName: topic.user.firstName,
-                  username: topic.user.username,
+                  id: topic.user!.id,
+                  firstName: topic.user!.firstName,
+                  username: topic.user!.username,
                 }}
                 changeRating={this.changeRating}
-                history={this.props.history}
-                hasRated={topic.ratings.some(
-                  (r: any) => r.userId === this.context.user.id
-                )}
-                rating={topic.ratings.some(
-                  (r: any) => r.userId === this.context.user.id && r.positive
-                )}
+                history={this.props.history!}
+                hasRated={
+                  this.context.isAuth &&
+                  topic.ratings!.some(
+                    (r: IRating) => r.userId === this.context.user.id
+                  )
+                }
+                rating={
+                  this.context.isAuth &&
+                  topic.ratings!.some(
+                    (r: IRating) =>
+                      r.userId === this.context.user.id && r.positive
+                  )
+                }
               />
             );
           })}
+          {this.state.fetching && <Loading />}
+          <TheEnd>{this.state.page === -1 && <>That is all folks!</>}</TheEnd>
         </TopicsContainer>
       </>
     );
   }
 }
 
-export default Home;
+export default withRouter(Home);
+
+const TheEnd = tw.div`w-full text-center text-2xl mt-3`;
 
 const ButtonPre = styled.div`
   color: rgba(255, 255, 255, 0.7);
@@ -159,6 +204,7 @@ const TopicMeta = tw.div`flex justify-between text-sm`;
 const TopicTags = tw.div``;
 const TopicTagIconPre = styled.div``;
 const TopicTagIcon = tw(TopicTagIconPre)`inline-block`;
+
 const TopicTagItemPre = styled.div`
   &:hover div {
     color: rgba(0, 145, 173, 1);
@@ -179,6 +225,9 @@ const VoteNum = tw(VotePre)``;
 const VoteDown = tw.div<{
   $active: boolean;
 }>`cursor-pointer text-white  ${(p) => (p.$active ? "" : "text-opacity-40")}`;
+const Author = styled.span`
+  color: rgba(0, 145, 173, 1);
+`;
 
 interface IAuther {
   id: number;
@@ -195,7 +244,7 @@ type TopicItemProps = {
   title: string;
   vote: number;
   changeRating?: CallableFunction;
-  history: any;
+  history: RouteComponentProps["history"];
   hasRated: boolean;
   rating: boolean;
 };
@@ -250,9 +299,12 @@ const Topic = (props: TopicItemProps) => {
                   .reduce((prev, curr) => [prev, curr])}
             </TopicTags>
             <div className="">
-              {props.comments} comment{props.comments === 1 ? "" : "s"} |{" "}
-              {props.answers} answer{props.answers === 1 ? "" : "s"} | by{" "}
-              {props.author.firstName} ({props.author.username})
+              {props.comments} comment{props.comments === 1 ? "" : "s"} | by{" "}
+              <Link to={`/profile/${props.author.id}`}>
+                <Author>
+                  {props.author.firstName} ({props.author.username})
+                </Author>
+              </Link>
             </div>
           </TopicMeta>
         </Link>

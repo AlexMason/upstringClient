@@ -3,6 +3,7 @@ import tw from "tailwind-styled-components";
 import { Link } from "react-router-dom";
 import UserContext from "../contexts/UserContext";
 import styled from "styled-components";
+import Logo from "../brand.png";
 
 export interface HeaderProps {}
 
@@ -22,7 +23,11 @@ class Header extends React.Component<HeaderProps, HeaderState> {
         <Nav>
           <Link to="/">
             <NavBrand>
-              <img src={process.env.PUBLIC_URL + "./brand.png"} />
+              <img
+                alt="upStr;ng"
+                src={Logo}
+                // src={process.env.PUBLIC_URL + "./brand.png"}
+              />
             </NavBrand>
           </Link>
           <NavMenuItems>

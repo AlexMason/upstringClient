@@ -244,4 +244,3 @@ class NewTopic extends React.Component<NewTopicProps, NewTopicState> {
 export default withRouter(NewTopic);
 
 const EditorWrapper = tw.div`text-gray-900`;
-const EditorArea = tw.div`bg-red-500`;

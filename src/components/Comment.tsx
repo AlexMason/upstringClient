@@ -10,15 +10,13 @@ import { SyntheticEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import { ValidationMsg } from "./StyledComponents";
+import { IComment } from "../interfaces";
+import { Link } from "react-router-dom";
 
 interface IAuthor {
   id: number;
   username: string;
   firstName: string;
-}
-
-interface IComment {
-  ratings: any[];
 }
 
 export interface CommentProps {
@@ -152,7 +150,7 @@ class Comment extends React.Component<CommentProps, CommentState> {
   };
 
   render() {
-    let voteTotal = this.props.comment.ratings.reduce((a, c) => {
+    let voteTotal = this.props.comment.ratings!.reduce((a, c) => {
       a += c.positive ? 1 : -1;
       return a;
     }, 0);
@@ -162,12 +160,12 @@ class Comment extends React.Component<CommentProps, CommentState> {
 
     if (this.context.isAuth) {
       voted =
-        this.props.comment.ratings.filter((r) => {
+        this.props.comment.ratings!.filter((r) => {
           if (r.userId === this.context.user.id) return true;
           return false;
         }).length > 0;
       votedPositive =
-        this.props.comment.ratings.filter((r) => {
+        this.props.comment.ratings!.filter((r) => {
           if (r.userId === this.context.user.id && r.positive) return true;
           return false;
         }).length > 0;
@@ -208,19 +206,24 @@ class Comment extends React.Component<CommentProps, CommentState> {
                 </>
               ) : (
                 <>
-                  {this.state.isCommentOwner && (
+                  {(this.state.isCommentOwner ||
+                    this.context.user.role === 2) && (
                     <EditControl onClick={this.toggleEdit}>Edit</EditControl>
                   )}
-                  {this.state.isCommentOwner && (
+                  {(this.state.isCommentOwner ||
+                    this.context.user.role === 2) && (
                     <DeleteControl onClick={this.deleteComment}>
                       Delete
                     </DeleteControl>
                   )}
                   {this.context.isAuth && <ReplyControl>Reply</ReplyControl>}
                   by{" "}
-                  <Author>
-                    {this.props.author.firstName} ({this.props.author.username})
-                  </Author>
+                  <Link to={`/profile/${this.props.author.id}`}>
+                    <Author>
+                      {this.props.author.firstName} (
+                      {this.props.author.username})
+                    </Author>
+                  </Link>
                 </>
               )}
             </div>
@@ -266,7 +269,7 @@ const ControlBase = styled.span`
   }
 `;
 
-const EditControl = tw(ControlBase)``;
+const EditControl = tw(ControlBase)`hover:text-cyan-600`;
 const DeleteControl = tw(ControlBase)`
 hover:text-red-500
 `;

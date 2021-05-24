@@ -1,17 +1,18 @@
 import * as React from "react";
+import { IUser } from "../interfaces";
 
 export type ContextProps = {
   token: string | null;
   isAuth: boolean;
   setToken: CallableFunction;
-  user: {};
+  user?: IUser;
 };
 
 const UserContext = React.createContext<ContextProps>({
   token: null,
   isAuth: false,
   setToken: (token: string | null) => {},
-  user: {},
+  user: undefined,
 });
 
 export default UserContext;
@@ -21,7 +22,7 @@ export interface UserContextProviderProps {}
 export interface UserContextProviderState {
   token: string | null;
   isAuth: boolean;
-  user: any;
+  user?: IUser;
   isLoading: boolean;
 }
 
@@ -34,7 +35,7 @@ export class UserContextProvider extends React.Component<
     this.state = {
       token: localStorage.getItem("token"),
       isAuth: false,
-      user: {},
+      user: undefined,
       isLoading: true,
     };
   }
@@ -64,7 +65,7 @@ export class UserContextProvider extends React.Component<
             this.setState({
               token: null,
               isAuth: false,
-              user: {},
+              user: undefined,
               isLoading: false,
             });
 
@@ -85,7 +86,7 @@ export class UserContextProvider extends React.Component<
     } else {
       this.setState({
         isAuth: false,
-        user: {},
+        user: undefined,
         isLoading: false,
       });
 
