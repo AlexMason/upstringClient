@@ -155,7 +155,7 @@ class Home extends React.Component<HomeProps, HomeState> {
             );
           })}
           {this.state.fetching && <Loading />}
-          <TheEnd>{this.state.page === -1 && <>That is all folks!</>}</TheEnd>
+          <TheEnd>{this.state.page === -1 && <>That's all folks!</>}</TheEnd>
         </TopicsContainer>
       </>
     );
@@ -163,8 +163,10 @@ class Home extends React.Component<HomeProps, HomeState> {
 }
 
 export default withRouter(Home);
-
-const TheEnd = tw.div`w-full text-center text-2xl mt-3`;
+const TheEndPre = styled.div`
+  font-family: "Dancing Script", cursive;
+`;
+const TheEnd = tw(TheEndPre)`w-full text-center text-5xl mt-10`;
 
 const ButtonPre = styled.div`
   color: rgba(255, 255, 255, 0.7);

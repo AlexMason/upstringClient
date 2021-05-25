@@ -61,10 +61,14 @@ class Topic extends React.Component<TopicProps, TopicState> {
             (b: number, c: IRating) => (b += c.positive ? 1 : -1),
             0
           );
-
-          if (aCommentRating < bCommentRating) return 1;
+          console.log(a.stickied);
           if (aCommentRating > bCommentRating) return -1;
+          if (aCommentRating < bCommentRating) return 1;
           return 0;
+        });
+
+        data.comments.sort((a: IComment, b: IComment) => {
+          return a.stickied === "moderator" ? -1 : 1;
         });
 
         this.setState({ topic: data, isLoading: false });
@@ -133,6 +137,19 @@ class Topic extends React.Component<TopicProps, TopicState> {
       .then((data) => {
         this.fetchTopic();
       });
+  };
+
+  handleReply = (body: string, author: string) => {
+    let editor = this.editorRef.current.getInstance();
+    let quote = body.split("\n").map((l) => "> " + l);
+
+    quote.push("> ", "> by " + author, "\n");
+
+    // quote = quote.join("\n");
+    console.log(quote.join("\n"));
+
+    editor.setMarkdown(quote.join("\n"), true);
+    editor.focus();
   };
 
   render() {
@@ -228,6 +245,7 @@ class Topic extends React.Component<TopicProps, TopicState> {
                           firstName: comment.user!.firstName,
                         }}
                         callback={this.fetchTopic}
+                        replyCb={this.handleReply}
                       />
                     );
                   })}
@@ -311,7 +329,7 @@ const TopicMeta = tw.div`px-4 py-2 flex justify-between border-t border-gray-500
 const TopicVoting = tw.div`flex items-center gap-2`;
 const TopicControls = tw.div``;
 const DeleteButton = tw.span`cursor-pointer hover:text-red-500`;
-const EditButton = tw.span`hover:text-green-400`;
+const EditButton = tw.span`hover:text-cyan-600`;
 const Author = styled.span`
   color: rgba(0, 145, 173, 1);
   cursor: pointer;

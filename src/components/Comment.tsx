@@ -1,5 +1,6 @@
 import * as React from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { FaThumbtack } from "react-icons/fa";
 import styled from "styled-components";
 import tw from "tailwind-styled-components";
 import UserContext from "../contexts/UserContext";
@@ -26,6 +27,7 @@ export interface CommentProps {
   vote: number;
   comment: IComment;
   callback: CallableFunction;
+  replyCb: CallableFunction;
 }
 
 export interface CommentState {
@@ -34,6 +36,7 @@ export interface CommentState {
   voteTotal: number;
   validated: false;
   error: string;
+  stickied: string;
 }
 
 class Comment extends React.Component<CommentProps, CommentState> {
@@ -49,6 +52,7 @@ class Comment extends React.Component<CommentProps, CommentState> {
       voteTotal: 0,
       validated: false,
       error: "",
+      stickied: this.props.comment.stickied,
     };
   }
 
@@ -108,12 +112,31 @@ class Comment extends React.Component<CommentProps, CommentState> {
       }),
       body: JSON.stringify({
         body: this.editorRef.current.getInstance().getMarkdown(),
+        stickied: this.state.stickied,
       }),
     })
       .then((res) => res.json())
       .then((data) => {
         this.props.callback();
         this.toggleEdit();
+      });
+  };
+
+  toggleStickied = () => {
+    fetch(`${process.env.REACT_APP_SERVER_URL}/comments/${this.props.id}`, {
+      method: "PUT",
+      headers: new Headers({
+        Authorization: `Bearer ${this.context.token}`,
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({
+        body: this.props.comment.body,
+        stickied: this.state.stickied === "moderator" ? "none" : "moderator",
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        this.props.callback();
       });
   };
 
@@ -172,7 +195,7 @@ class Comment extends React.Component<CommentProps, CommentState> {
     }
 
     return (
-      <Container>
+      <Container stickied={this.state.stickied === "moderator"}>
         <VoteMeta>
           <VoteUp $active={voted && votedPositive}>
             <FiChevronUp onClick={(e) => this.changeRating(e, true)} />
@@ -198,6 +221,19 @@ class Comment extends React.Component<CommentProps, CommentState> {
             )}
           </Body>
           <Controls>
+            <div className="text-xs self-center pl-1 text-cyan-900 flex gap-1 items-center">
+              {this.state.stickied === "moderator" && <FaThumbtack />}
+              {this.context.user.role >= 2 && (
+                <div
+                  className="text-white text-xs cursor-pointer font-light uppercase pl-1"
+                  onClick={this.toggleStickied}
+                >
+                  {this.state.stickied === "moderator"
+                    ? "pinned"
+                    : "pin comment"}
+                </div>
+              )}
+            </div>
             <div className="float-right">
               {this.state.isEditing ? (
                 <>
@@ -216,7 +252,18 @@ class Comment extends React.Component<CommentProps, CommentState> {
                       Delete
                     </DeleteControl>
                   )}
-                  {this.context.isAuth && <ReplyControl>Reply</ReplyControl>}
+                  {this.context.isAuth && (
+                    <ReplyControl
+                      onClick={() => {
+                        this.props.replyCb(
+                          this.props.body,
+                          this.props.author.username
+                        );
+                      }}
+                    >
+                      Reply
+                    </ReplyControl>
+                  )}
                   by{" "}
                   <Link to={`/profile/${this.props.author.id}`}>
                     <Author>
@@ -247,8 +294,11 @@ const VoteDown = tw.div<{
 
 export default Comment;
 
-const ContainerPre = styled.div`
-  box-shadow: 0px 0px 10px -5px rgba(255, 255, 255, 1);
+const ContainerPre = styled.div<{ stickied: boolean }>`
+  ${(p) =>
+    p.stickied
+      ? "box-shadow: 0px 0px 10px -2px rgba(0, 145, 173, 1);"
+      : "box-shadow: 0px 0px 10px -5px rgba(255, 255, 255, 0);"}
 `;
 const Container = tw(
   ContainerPre
@@ -256,7 +306,7 @@ const Container = tw(
 const VoteMeta = tw.div`flex flex-col items-center px-4 py-2 bg-black text-xl border-r-2 border-white border-opacity-10 rounded-l-2xl asdasdasd`;
 
 const Body = tw.div`p-4`;
-const Controls = tw.div`flex justify-end text-sm pr-2 py-1 bg-black rounded-br-2xl`;
+const Controls = tw.div`flex justify-between text-sm pr-2 py-1 bg-black rounded-br-2xl`;
 const Content = tw.div`flex-grow flex flex-col justify-between`;
 
 const ControlBase = styled.span`
