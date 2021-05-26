@@ -28,6 +28,9 @@ function App() {
           <PageRoute path="/topic/:id" component={<Topic />} />
           <PageRoute path="/tag" component={<Tag />} />
           <PageRoute path="/" component={<Home />} />
+          <Route path="/test">
+            <div>This is my test route.</div>
+          </Route>
         </Switch>
       </AppWrapper>
     </Router>
@@ -40,10 +43,16 @@ type PageRouteProps = {
   path: string;
   component: any;
   centered?: boolean;
+  exact?: boolean;
 };
 
-const PageRoute: React.FC<PageRouteProps> = ({ path, centered, component }) => (
-  <Route path={path}>
+const PageRoute: React.FC<PageRouteProps> = ({
+  path,
+  exact,
+  centered,
+  component,
+}) => (
+  <Route exact={exact} path={path}>
     <Page centered={centered}>{component}</Page>
   </Route>
 );

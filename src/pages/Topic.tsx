@@ -16,6 +16,7 @@ import { Editor } from "@toast-ui/react-editor";
 import uuid from "react-uuid";
 import styled from "styled-components";
 import { IComment, IRating, ITopic } from "../interfaces";
+import DeleteModal from "../components/DeleteModal";
 
 export interface IPathParams {
   id: string;
@@ -178,6 +179,7 @@ class Topic extends React.Component<TopicProps, TopicState> {
           <>
             {user && (
               <>
+                {/* <DeleteModal /> */}
                 <TopicContainer>
                   <TopicTitle>{title}</TopicTitle>
                   <TopicBody className="markdown-body">
@@ -203,7 +205,8 @@ class Topic extends React.Component<TopicProps, TopicState> {
                     </TopicVoting>
                     <TopicControls>
                       {(this.state.isTopicOwner ||
-                        this.context.user.role === 2) && (
+                        (this.context.user &&
+                          this.context.user.role === 2)) && (
                         <>
                           <Link to={`/topic/edit/${id}`}>
                             <EditButton>Edit</EditButton>
@@ -212,7 +215,8 @@ class Topic extends React.Component<TopicProps, TopicState> {
                         </>
                       )}
                       {(this.state.isTopicOwner ||
-                        this.context.user.role === 2) && (
+                        (this.context.user &&
+                          this.context.user.role === 2)) && (
                         <>
                           <DeleteButton onClick={this.handleDelete}>
                             Delete

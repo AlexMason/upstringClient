@@ -83,7 +83,7 @@ class Home extends React.Component<HomeProps, HomeState> {
         this.setState({
           topics: [...this.state.topics, ...data],
           fetching: false,
-          page: data.length === 0 ? -1 : this.state.page,
+          page: data.length < 10 ? -1 : this.state.page,
         });
       });
   };

@@ -223,7 +223,7 @@ class Comment extends React.Component<CommentProps, CommentState> {
           <Controls>
             <div className="text-xs self-center pl-1 text-cyan-900 flex gap-1 items-center">
               {this.state.stickied === "moderator" && <FaThumbtack />}
-              {this.context.user.role >= 2 && (
+              {this.context.user && this.context.user.role >= 2 && (
                 <div
                   className="text-white text-xs cursor-pointer font-light uppercase pl-1"
                   onClick={this.toggleStickied}
@@ -243,11 +243,11 @@ class Comment extends React.Component<CommentProps, CommentState> {
               ) : (
                 <>
                   {(this.state.isCommentOwner ||
-                    this.context.user.role === 2) && (
+                    (this.context.isAuth && this.context.user.role === 2)) && (
                     <EditControl onClick={this.toggleEdit}>Edit</EditControl>
                   )}
                   {(this.state.isCommentOwner ||
-                    this.context.user.role === 2) && (
+                    (this.context.isAuth && this.context.user.role === 2)) && (
                     <DeleteControl onClick={this.deleteComment}>
                       Delete
                     </DeleteControl>
